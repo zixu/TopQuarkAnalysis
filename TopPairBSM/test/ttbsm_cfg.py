@@ -135,8 +135,6 @@ else :
         '/store/data/Run2012A/Jet/AOD/22Jan2013-v1/30002/909488FF-8D72-E211-893B-0026189438EF.root'
     ]
 
-#raw_input(process.source.fileNames); 
-
 #process.source.eventsToProcess = cms.untracked.VEventRange( ['1:86747'] )
 
 #process.source.skipEvents = cms.untracked.uint32(17268) 
@@ -409,15 +407,44 @@ process.patElectronsPFlowLoose.isolationValues = cms.PSet(
     pfPhotons = cms.InputTag("elPFIsoValueGamma03PFIdPFlowLoose")
     )
 
+
+postfixNoCHS = "PFlowNoCHS"
+usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=not options.useData, postfix=postfixNoCHS,
+	  jetCorrections=inputJetCorrLabelAK5PFchs, pvCollection=cms.InputTag('goodOfflinePrimaryVertices'), typeIMetCorrections=True)
+if not options.forceCheckClosestZVertex :
+    process.pfPileUpPFlowNoCHS.checkClosestZVertex = False
+#no CHS 
+process.pfNoPileUpPFlowNoCHS.enable = False #XUON
+    
+    
+# change the cone size of electron isolation to 0.3 as default.
+process.pfIsolatedElectronsPFlowNoCHS.isolationValueMapsCharged = cms.VInputTag(cms.InputTag("elPFIsoValueCharged03PFIdPFlowNoCHS"))
+process.pfIsolatedElectronsPFlowNoCHS.deltaBetaIsolationValueMap = cms.InputTag("elPFIsoValuePU03PFIdPFlowNoCHS")
+process.pfIsolatedElectronsPFlowNoCHS.isolationValueMapsNeutral = cms.VInputTag(cms.InputTag("elPFIsoValueNeutral03PFIdPFlowNoCHS"), cms.InputTag("elPFIsoValueGamma03PFIdPFlowNoCHS"))
+
+process.pfElectronsPFlowNoCHS.isolationValueMapsCharged  = cms.VInputTag(cms.InputTag("elPFIsoValueCharged03PFIdPFlowNoCHS"))
+process.pfElectronsPFlowNoCHS.deltaBetaIsolationValueMap = cms.InputTag("elPFIsoValuePU03PFIdPFlowNoCHS" )
+process.pfElectronsPFlowNoCHS.isolationValueMapsNeutral  = cms.VInputTag(cms.InputTag( "elPFIsoValueNeutral03PFIdPFlowNoCHS"), cms.InputTag("elPFIsoValueGamma03PFIdPFlowNoCHS"))
+
+process.patElectronsPFlowNoCHS.isolationValues = cms.PSet(
+    pfChargedHadrons = cms.InputTag("elPFIsoValueCharged03PFIdPFlowNoCHS"),
+    pfChargedAll = cms.InputTag("elPFIsoValueChargedAll03PFIdPFlowNoCHS"),
+    pfPUChargedHadrons = cms.InputTag("elPFIsoValuePU03PFIdPFlowNoCHS"),
+    pfNeutralHadrons = cms.InputTag("elPFIsoValueNeutral03PFIdPFlowNoCHS"),
+    pfPhotons = cms.InputTag("elPFIsoValueGamma03PFIdPFlowNoCHS")
+    )
+
 # enable/disable tau cleaning
 if not options.doJetTauCrossCleaning:
     # if jetCrossCleaning is false, we want to disable
     # the cross cleaning (which is on by default)
     getattr(process,"pfNoTau"+postfix).enable = False
     getattr(process,"pfNoTau"+postfixLoose).enable = False
+    getattr(process,"pfNoTau"+postfixNoCHS).enable = False
 else:
     getattr(process,"pfNoTau"+postfix).enable = False
     getattr(process,"pfNoTau"+postfixLoose).enable = False
+    getattr(process,"pfNoTau"+postfixNoCHS).enable = False
 
 # Set up "loose" leptons. 
 
@@ -467,6 +494,11 @@ process.patElectronsPFlowLoose.electronIDSources.mvaTrigV0    = cms.InputTag("mv
 process.patElectronsPFlowLoose.electronIDSources.mvaNonTrigV0 = cms.InputTag("mvaNonTrigV0") 
 process.patPF2PATSequencePFlowLoose.replace( process.patElectronsPFlowLoose, process.eidMVASequence * process.patElectronsPFlowLoose )
 
+process.patElectronsPFlowNoCHS.electronIDSources.mvaTrigV0    = cms.InputTag("mvaTrigV0")
+process.patElectronsPFlowNoCHS.electronIDSources.mvaNonTrigV0 = cms.InputTag("mvaNonTrigV0") 
+process.patPF2PATSequencePFlowNoCHS.replace( process.patElectronsPFlowNoCHS, process.eidMVASequence * process.patElectronsPFlowNoCHS )
+
+
 #Convesion Rejection
 # this should be your last selected electron collection name since currently index is used to match with electron later. We can fix this using reference pointer.
 process.patConversionsPFlow = cms.EDProducer("PATConversionProducer",
@@ -477,6 +509,11 @@ process.patConversionsPFlowLoose = cms.EDProducer("PATConversionProducer",
                                                   electronSource = cms.InputTag("selectedPatElectronsPFlowLoose")  
                                                   )
 process.patPF2PATSequencePFlowLoose += process.patConversionsPFlowLoose
+process.patConversionsPFlowNoCHS = cms.EDProducer("PATConversionProducer",
+                                                  electronSource = cms.InputTag("selectedPatElectronsPFlowNoCHS")  
+                                                  )
+process.patPF2PATSequencePFlowNoCHS += process.patConversionsPFlowNoCHS
+
 
 
 ###############################
@@ -794,8 +831,10 @@ for ipostfix in [postfix] :
 # Use the good primary vertices everywhere. 
 for imod in [process.patMuonsPFlow,
              process.patMuonsPFlowLoose,
+             process.patMuonsPFlowNoCHS,
              process.patElectronsPFlow,
              process.patElectronsPFlowLoose,
+             process.patElectronsPFlowNoCHS,
              process.patMuons,
              process.patElectrons] :
     imod.pvSrc = "goodOfflinePrimaryVertices"
@@ -1274,6 +1313,7 @@ if options.useExtraJetColls:
 # AK5 Jets
 process.selectedPatJetsPFlow.cut = cms.string("pt > 5")
 process.selectedPatJetsPFlowLoose.cut = cms.string("pt > 20")
+process.selectedPatJetsPFlowNoCHS.cut = cms.string("pt > 5")
 process.patJetsPFlow.addTagInfos = True
 process.patJetsPFlow.tagInfoSources = cms.VInputTag(
     cms.InputTag("secondaryVertexTagInfosAODPFlow")
@@ -1343,6 +1383,9 @@ process.selectedPatElectronsPFlow.cut = cms.string('pt > 10.0 & abs(eta) < 2.5')
 process.patElectronsPFlow.embedTrack = cms.bool(True)
 process.selectedPatElectronsPFlowLoose.cut = cms.string('pt > 10.0 & abs(eta) < 2.5')
 process.patElectronsPFlowLoose.embedTrack = cms.bool(True)
+process.selectedPatElectronsPFlowNoCHS.cut = cms.string('pt > 10.0 & abs(eta) < 2.5')
+process.patElectronsPFlowNoCHS.embedTrack = cms.bool(True)
+
 # muons
 process.selectedPatMuons.cut = cms.string('pt > 10.0 & abs(eta) < 2.5')
 process.patMuons.embedTrack = cms.bool(True)
@@ -1350,6 +1393,9 @@ process.selectedPatMuonsPFlow.cut = cms.string("pt > 10.0 & abs(eta) < 2.5")
 process.patMuonsPFlow.embedTrack = cms.bool(True)
 process.selectedPatMuonsPFlowLoose.cut = cms.string("pt > 10.0 & abs(eta) < 2.5")
 process.patMuonsPFlowLoose.embedTrack = cms.bool(True)
+process.selectedPatMuonsPFlowNoCHS.cut = cms.string("pt > 10.0 & abs(eta) < 2.5")
+process.patMuonsPFlowNoCHS.embedTrack = cms.bool(True)
+
 # taus
 process.selectedPatTausPFlow.cut = cms.string("pt > 10.0 & abs(eta) < 3")
 process.selectedPatTaus.cut = cms.string("pt > 10.0 & abs(eta) < 3")
@@ -1691,7 +1737,8 @@ process.patseq = cms.Sequence(
     process.kt6PFJetsForIsolation*
     process.kt6PFJetsPFlow*#XUON
     process.recoTauClassicHPSSequence*
-    getattr(process,"patPF2PATSequence"+postfixLoose)#*
+    getattr(process,"patPF2PATSequence"+postfixLoose)*
+    getattr(process,"patPF2PATSequence"+postfixNoCHS)#*
 #    process.miniPFLeptonSequence
     )
 
@@ -1810,7 +1857,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(100)
 
 
 # process all the events
-process.maxEvents.input = 2000
+process.maxEvents.input = 20
 process.options.wantSummary = True
 process.out.dropMetaData = cms.untracked.string("DROPPED")
 
@@ -1891,6 +1938,10 @@ process.out.outputCommands = [
     'keep patMuons_selected*PFlowLoose*_*_*',
     'keep patJets_selectedPatJetsPFlowLoose_*_*',
     'keep patJets_selectedPatJetsPFlow_*_*',#XUON
+    'keep patElectrons_selected*PFlowNoCHS*_*_*',
+    'keep patMuons_selected*PFlowNoCHS*_*_*',
+    'keep patJets_selectedPatJetsPFlowNoCHS_*_*',
+
     'keep *_patConversions*_*_*',
     #'keep patTaus_*PFlowLoose*_*_*',
     'keep *_offlineBeamSpot_*_*',
@@ -1929,6 +1980,10 @@ else :
 if options.writePFCands or options.writeFat :
 
     process.out.outputCommands += [
+        'keep *_pf*_*_*',#XUON
+        'keep *_pfPileUp*_*_*',#XUON
+        'keep *_pfNoPileUp*_*_*',#XUON
+        'keep *_pfNoElectron*_*_*',#XUON
         'keep *_pfNoElectronPFlow_*_*',
         'drop recoPFCandidates_selectedPatJets*_*_*'
         ]
@@ -1959,11 +2014,13 @@ if options.usePythia8 :
     process.patJetPartonMatch.mcStatus = cms.vint32(23)
     process.patJetPartonMatchPFlow.mcStatus = cms.vint32(23)
     process.patJetPartonMatchPFlowLoose.mcStatus = cms.vint32(23)
+    process.patJetPartonMatchPFlowNoCHS.mcStatus = cms.vint32(23)
     
 if options.usePythia6andPythia8 :
     process.patJetPartonMatch.mcStatus = cms.vint32(3,23)
     process.patJetPartonMatchPFlow.mcStatus = cms.vint32(3,23)
     process.patJetPartonMatchPFlowLoose.mcStatus = cms.vint32(3,23)
+    process.patJetPartonMatchPFlowNoCHS.mcStatus = cms.vint32(3,23)
 
 
 
