@@ -1857,7 +1857,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(100)
 
 
 # process all the events
-process.maxEvents.input = 20
+process.maxEvents.input = 1000
 process.options.wantSummary = True
 process.out.dropMetaData = cms.untracked.string("DROPPED")
 
@@ -1980,10 +1980,11 @@ else :
 if options.writePFCands or options.writeFat :
 
     process.out.outputCommands += [
-        'keep *_pf*_*_*',#XUON
-        'keep *_pfPileUp*_*_*',#XUON
-        'keep *_pfNoPileUp*_*_*',#XUON
-        'keep *_pfNoElectron*_*_*',#XUON
+        #'keep *_pf*_*_*',#XUON
+        #'keep *_pfPileUp*_*_*',#XUON
+        #'keep *_pfNoPileUp*_*_*',#XUON
+        #'keep *_pfNoElectron*_*_*',#XUON
+        'keep *_pfPileUpPFlow_*_*',#XUON
         'keep *_pfNoElectronPFlow_*_*',
         'drop recoPFCandidates_selectedPatJets*_*_*'
         ]
