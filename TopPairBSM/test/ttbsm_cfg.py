@@ -1857,7 +1857,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(100)
 
 
 # process all the events
-process.maxEvents.input = 1000
+process.maxEvents.input = 200
 process.options.wantSummary = True
 process.out.dropMetaData = cms.untracked.string("DROPPED")
 
@@ -1941,6 +1941,9 @@ process.out.outputCommands = [
     'keep patElectrons_selected*PFlowNoCHS*_*_*',
     'keep patMuons_selected*PFlowNoCHS*_*_*',
     'keep patJets_selectedPatJetsPFlowNoCHS_*_*',
+	'drop patTaus_selectedPatTausPFlowNoCHS_*_*',#XUON
+	'drop patJets_selectedPatJetsCA8PrunedSubjetsPF_*_*',#XUON 
+	'drop patJets_selectedPatJetsPFlowNoCHS_*_*',#XUON 
 
     'keep *_patConversions*_*_*',
     #'keep patTaus_*PFlowLoose*_*_*',
