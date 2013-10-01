@@ -1889,6 +1889,7 @@ process.out.outputCommands = [
     'keep *_patMETs*_*_*',
     'keep *_offlinePrimaryVertices*_*_*',#XUON
     'keep *_kt6PFJets*_*_*',#XUON 
+    'keep *_ak5PFJets*_*_*',#XUON 
     'keep *_goodOfflinePrimaryVertices*_*_*',    
     'drop patPFParticles_*_*_*',
     'drop recoPFJets_*_*_*',
