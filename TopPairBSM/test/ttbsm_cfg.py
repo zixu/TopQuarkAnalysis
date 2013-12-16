@@ -125,7 +125,8 @@ if not options.useData :
 
     process.source.fileNames = [
         #'/store/mc/Summer12_DR53X/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/0076C8E3-9AE1-E111-917C-003048D439AA.root'
-		'/store/mc/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_S10_START53_V7A-v1/0002/FEF4E41A-46D4-E111-9594-0025B3E06424.root'
+		#'/store/mc/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_S10_START53_V7A-v1/0002/FEF4E41A-46D4-E111-9594-0025B3E06424.root'
+		'file:STEP2_RAW2DIGI_L1Reco_RECO_VALIDATION_DQM_PU50.root'
     ]
 
 else :
@@ -161,7 +162,8 @@ if options.useData :
         process.GlobalTag.globaltag = cms.string( options.globalTag )
 else :
     if options.globalTag is '':
-        process.GlobalTag.globaltag = cms.string( 'START53_V7G::All' )
+        #process.GlobalTag.globaltag = cms.string( 'START53_V7G::All' )
+        process.GlobalTag.globaltag = cms.string( 'START53_V26::All' )
     else:
         process.GlobalTag.globaltag = cms.string( options.globalTag )
 
